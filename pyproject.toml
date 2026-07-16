@@ -1,0 +1,10 @@
+[project]
+name = "tools-website"
+version = "0.1.0"
+description = "Simple website to host software tools that I build."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.139.0",
+    "uvicorn>=0.51.0",
+]
