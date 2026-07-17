@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Utilities{% endblock %}
+{% block content %}
+<h1>Utilities</h1>
+<ul>
+    {% for tool in tools %}
+    <li><a href="/tools/{{ tool.slug }}/">{{ tool.name }}</a> &mdash; {{ tool.description }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
