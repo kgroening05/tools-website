@@ -4,7 +4,7 @@
 
 {% block content %}
   <h1>MarkItDown</h1>
-  <p>Convert a document to Markdown.</p>
+  <p>Convert a document to Markdown. Supports PDF and DOCX.</p>
 
   <form method="post"
         action="/tools/markitdown/convert"
@@ -17,7 +17,24 @@
   </form>
 
   {% if markdown %}
-    <h2>Result{% if filename %}: {{ filename }}{% endif %}</h2>
-    <pre style="white-space: pre-wrap; word-wrap: break-word;">{{ markdown }}</pre>
+    <section class="result" data-filename="{{ filename or 'converted' }}">
+      <div class="result-header">
+        <h2>{% if filename %}{{ filename }}{% else %}Result{% endif %}</h2>
+        <div class="result-controls">
+          <div id="view-toggle" class="view-toggle" role="group" aria-label="View mode">
+            <button type="button" data-mode="rendered" aria-pressed="true">Rendered</button>
+            <button type="button" data-mode="raw" aria-pressed="false">Raw</button>
+          </div>
+          <button type="button" id="download-btn">Download .md</button>
+        </div>
+      </div>
+
+      <pre id="markdown-raw" class="markdown-output" hidden>{{ markdown }}</pre>
+      <div id="markdown-rendered" class="markdown-output markdown-rendered"></div>
+    </section>
+
+    <script src="/static\js\vendor\purify.min.js" defer></script>
+    <script src="/static\js\vendor\marked.min.js" defer></script>
+    <script src="/static/js/markitdown.js" defer></script>
   {% endif %}
 {% endblock %}
