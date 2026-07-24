@@ -1,10 +1,7 @@
 from pathlib import Path
-
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from jinja2 import ChoiceLoader, Environment, FileSystemLoader
-
+import template_env
 from tools import TOOLS
 
 BASE_DIR = Path(__file__).parent
@@ -15,23 +12,15 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 app.mount("/output", StaticFiles(directory=OUTPUT_DIR), name="output")
 
-loader = ChoiceLoader(
-    [FileSystemLoader(BASE_DIR / "templates")]
-    + [
-        FileSystemLoader(BASE_DIR / "tools" / tool.__name__.rsplit(".", 1)[-1] / "templates")
-        for tool in TOOLS
-    ]
-)
-env = Environment(loader=loader)
-env.globals["all_tools"] = [tool.meta for tool in TOOLS]
-templates = Jinja2Templates(env=env)
+template_env.templates = template_env.build_templates(TOOLS)
 
 for tool in TOOLS:
     app.include_router(tool.router, prefix=f"/tools/{tool.meta['slug']}")
 
-
 @app.get("/")
 def index(request: Request):
-    return templates.TemplateResponse(
-        request, "index.html", {"tools": [tool.meta for tool in TOOLS]}
+    return template_env.templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"tools": [t.meta for t in TOOLS]},
     )
