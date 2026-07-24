@@ -5,9 +5,9 @@ import io
 
 md = MarkItDown(enable_plugins=False)
 
-
 def convertToMarkdown(data: BinaryIO, filename: str, content_type: str | None = None,)->str:
     buffer = io.BytesIO(data.read())
+   
     stream_info = StreamInfo(
         extension=Path(filename).suffix or None,
         filename=filename,
@@ -16,3 +16,4 @@ def convertToMarkdown(data: BinaryIO, filename: str, content_type: str | None = 
     
     result = md.convert(source=buffer, stream_info=stream_info)
     return result.markdown
+
