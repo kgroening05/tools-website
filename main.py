@@ -3,6 +3,10 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 import template_env
 from tools import TOOLS
+import mimetypes
+
+mimetypes.add_type("application/javascript", ".mjs")
+mimetypes.add_type("application/wasm", ".wasm")
 
 BASE_DIR = Path(__file__).parent
 OUTPUT_DIR = BASE_DIR / "output"
