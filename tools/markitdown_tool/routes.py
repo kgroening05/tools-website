@@ -11,7 +11,7 @@ router = APIRouter()
 def page(request: Request):
     return template_env.templates.TemplateResponse(
         request=request,
-        name="page.html",
+        name="markitdown_tool_page.html",
         context={},
     )
 
@@ -21,14 +21,14 @@ def convert(request: Request, file: UploadFile = File(...)):
     if not validateInputFileType(file.filename, file.content_type):
             return template_env.templates.TemplateResponse(
             request=request,
-            name="page.html",
+            name="markitdown_tool_page.html",
             context={"error": "Invalid file type. Only PDF and DOCX files are allowed."}
         )
 
     if not validateInputFileSize(file.file):
         return template_env.templates.TemplateResponse(
             request=request,
-            name="page.html",
+            name="markitdown_tool_page.html",
             context={"error": "File size exceeds the limit."}
         )
 
@@ -39,6 +39,6 @@ def convert(request: Request, file: UploadFile = File(...)):
     )
     return template_env.templates.TemplateResponse(
         request=request,
-        name="page.html",
+        name="markitdown_tool_page.html",
         context={"markdown": markdown, "filename": file.filename},
     )
