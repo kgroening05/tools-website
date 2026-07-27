@@ -139,3 +139,4 @@ def test_out_of_order_ranges_are_allowed():
 def test_zero_pages_document():
     result = parse_range_spec("1", 0)
     assert isinstance(result, str)
+    
