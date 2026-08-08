@@ -32,6 +32,11 @@ jobs:
           oauth-secret: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
           tags: tag:ci
 
+      - name: Check Tailscale status
+        run: |
+          sudo tailscale status
+          ip addr show | grep -i tailscale || echo "No Tailscale interface found"
+
       - name: Deploy over SSH
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
