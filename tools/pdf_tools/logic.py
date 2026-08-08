@@ -1,26 +1,45 @@
 from pypdf import PdfWriter, PdfReader
-from typing import BinaryIO
+from pypdf.errors import PdfReadError
 import io
-
-def getPdfMetadata(file: BinaryIO):
-    # Read the PDF file and extract metadata
-    reader = PdfReader(file)
-    return reader.metadata
-
-def splitPdf(file: BinaryIO, start_page: int, end_page: int)->io.BytesIO:
-    reader = PdfReader(file)
-    writer = PdfWriter()
-
-    for i in range(start_page - 1, end_page):
-        writer.add_page(reader.pages[i])
-
-    output = io.BytesIO()
-    writer.write(output)
-    return output
+from pathlib import Path
 
 KEYWORDS_START = {"begin", "start", "first"}
 KEYWORDS_END = {"end", "last"}
 KEYWORDS_REST = {"remaining", "rest"}
+
+def load_pdf(data: bytes) -> PdfReader | str:
+    try:
+        reader = PdfReader(io.BytesIO(data))
+    except PdfReadError as e:
+        return f"Could not read PDF: {e}"
+    except Exception as e:
+        return f"Unexpected error reading PDF: {e}"
+
+    if reader.is_encrypted:
+        # Try empty password — some PDFs are technically encrypted but with no protection
+        try:
+            if not reader.decrypt(""):
+                return "PDF is password-protected"
+        except Exception:
+            return "PDF is password-protected"
+
+    if len(reader.pages) == 0:
+        return "PDF contains no pages"
+
+    return reader
+
+def get_page_count(reader: PdfReader) -> int:
+    # Note: this is a trivial accessor, but it exists to abstract the pypdf internals.
+    return len(reader.pages)
+
+def split_pdf(reader: PdfReader, start: int, end: int) -> bytes:
+    """Extract pages start..end (1-indexed, inclusive) as PDF bytes."""
+    writer = PdfWriter()
+    for page_num in range(start - 1, end):   # convert to 0-indexed for pypdf
+        writer.add_page(reader.pages[page_num])
+    buffer = io.BytesIO()
+    writer.write(buffer)
+    return buffer.getvalue()
 
 def parse_range_spec(spec: str, total_pages: int) -> list[tuple[int, int]] | str:
     if not spec.strip():
@@ -73,9 +92,7 @@ def parse_range_spec(spec: str, total_pages: int) -> list[tuple[int, int]] | str
     return result
 
 
-def _resolve_endpoint(
-    token: str, total_pages: int, last_end: int, is_start: bool
-) -> int | str:
+def _resolve_endpoint(token: str, total_pages: int, last_end: int, is_start: bool) -> int | str:
     """Resolve a single endpoint (a number or a keyword). Returns int or error string."""
     if token in KEYWORDS_START:
         return 1
@@ -92,3 +109,11 @@ def _resolve_endpoint(
             return f"Page {n} is invalid — pages start at 1"
         return n
     return f"Unknown token: '{token}'"
+
+def _render_error(request, ranges):
+    pass
+
+def save_pdf(pdf_data: bytes, filename: str, output: Path, job_id: str) -> None:
+    full_path = output / job_id / filename
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+    full_path.write_bytes(pdf_data)

@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Request, UploadFile, File
+from fastapi import APIRouter, Request, UploadFile, File, Form
+from pathlib import Path
 import template_env
-from .logic import getPdfMetadata
+from .logic import load_pdf, split_pdf, parse_range_spec, get_page_count, _render_error, save_pdf
+import secrets
 
 router = APIRouter()
-
+OUTPUT_DIR = template_env.OUTPUT_DIR
+    
 @router.get("/")
 def page(request: Request):
     return template_env.templates.TemplateResponse(
@@ -12,17 +15,36 @@ def page(request: Request):
         context={},
     )
 
-@router.post("/")
-def handle_upload(request: Request, files: list[UploadFile] = File(...)):
-    # Handle the uploaded files here
-    metadata_list = []
-    for file in files:
-        # Process each uploaded file
-        metadata = getPdfMetadata(file.file)
-        # Do something with the metadata, e.g., save it to a database or return it
-        metadata_list.append(metadata)
+@router.post("/split")
+async def split(request: Request, file: UploadFile = File(...), range_spec: str = Form(...)):
+    data = await file.read()
+
+    reader = load_pdf(data)
+    if isinstance(reader, str):
+        return _render_error(request, reader)
+
+    page_count = get_page_count(reader)
+
+    ranges = parse_range_spec(range_spec, page_count)
+    if isinstance(ranges, str):
+        return _render_error(request, ranges)
+
+    outputs = []
+    base = Path(file.filename or "document").stem
+    job_id = secrets.token_urlsafe(16)
+    for start, end in ranges:
+        pdf_bytes = split_pdf(reader, start, end)
+        filename = f"{base}-p{start}-{end}.pdf"
+        save_pdf(pdf_bytes, filename, OUTPUT_DIR, job_id)
+        outputs.append({
+            "filename": filename,
+            "url": f"/output/{job_id}/{filename}",
+        })
+
+    # Save outputs, render result page with download links
     return template_env.templates.TemplateResponse(
         request=request,
         name="pdf_tools_page.html",
-        context={"metadata_list": metadata_list},
+        context={"output_files": outputs}
     )
+    
