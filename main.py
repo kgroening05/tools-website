@@ -8,13 +8,10 @@ import mimetypes
 mimetypes.add_type("application/javascript", ".mjs")
 mimetypes.add_type("application/wasm", ".wasm")
 
-BASE_DIR = Path(__file__).parent
-OUTPUT_DIR = BASE_DIR / "output"
-OUTPUT_DIR.mkdir(exist_ok=True)
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-app.mount("/output", StaticFiles(directory=OUTPUT_DIR), name="output")
+app.mount("/static", StaticFiles(directory=template_env.BASE_DIR / "static"), name="static")
+app.mount("/output", StaticFiles(directory=template_env.OUTPUT_DIR), name="output")
 
 template_env.templates = template_env.build_templates(TOOLS)
 
