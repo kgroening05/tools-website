@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}PDF Tools{% endblock %}
+
+{% block content %}
+    <script type="module" src="/static/js/pdf-tools-inspect.js"></script>
+    <h1>PDF Tools</h1>
+    <p>Convert a PDF to text or images, or merge multiple PDFs into one.</p>
+    <form method="post" 
+    action="/tools/pdf_tools/split"
+    enctype="multipart/form-data">
+        <label for="file">Choose PDF file to upload:
+            <input type="file" name="file" accept="application/pdf" required>
+        </label>
+        <label for="range_spec">Enter page split range:
+            <input type="text" name="range_spec" value="" placeholder="e.g., 1-5, 10-15, 1-5; 6-end" required>
+        </label>
+        <button type="submit">Upload File</button>
+    </form>
+    <div id="pdf-info"></div>
+    
+    {% if output_files %}
+    <section class="result">
+        <h2>Split Pages</h2>
+        <ul>
+        {% for out in output_files %}
+            <li>
+            <a href="{{ out.url }}" download>{{ out.filename }}</a>
+            </li>
+        {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+{% endblock %}

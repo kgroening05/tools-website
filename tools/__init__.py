@@ -1,3 +1,3 @@
-from . import markitdown_tool
+from . import markitdown_tool, pdf_tools
 
-TOOLS = [markitdown_tool]
+TOOLS = [markitdown_tool, pdf_tools]
