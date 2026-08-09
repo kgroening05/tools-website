@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Image Collage{% endblock %}
+
+{% block content %}
+  <h1>Image Collage</h1>
+  <p>Combine multiple images into a single image.</p>
+
+  <label>
+    Choose images:
+    <input type="file" id="image-input" accept="image/*" multiple>
+  </label>
+  <div>
+    <label>
+      Layout:
+      <input type="number" id="columns-input" min="1" value="1"> columns
+    </label>
+    <br/>
+    <label>
+      Output format:
+      <select id="format-select">
+        <option value="image/webp">WebP</option>
+        <option value="image/jpeg">JPEG</option>
+        <option value="image/png">PNG</option>
+      </select>
+    </label>
+    <br/>
+    <label>
+      Quality (for JPEG/WebP):
+      <input type="number" id="quality-input" min="1" max="100" value="90">
+    </label>
+
+    <button type="button" id="update-btn">Update Collage</button>
+  </div>
+  <div id="image-info"></div>
+  <div id="result"></div>
+
+  <script src="/static/js/image_collage.js" defer></script>
+
+{% endblock %}
