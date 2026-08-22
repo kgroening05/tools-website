@@ -24,18 +24,31 @@ async function updateOutput() {
   const images = await Promise.all(files.map(loadImage));
 
   const cellWidth = Math.max(...images.map(img => img.width));
-  const cellHeight = Math.max(...images.map(img => img.height));
   const numRows = Math.ceil(images.length / numColumns);
+  let totalHeight = 0;
+  for (let i=0; i < images.length; i++){
+    if (i % numColumns == 0){
+      totalHeight += images[i].height;
+    }
+  }
 
   const canvas = document.createElement("canvas");
   canvas.width = cellWidth * numColumns;
-  canvas.height = cellHeight * numRows;
+  canvas.height = totalHeight;
   const ctx = canvas.getContext("2d");
 
+  let row_cursor = 0;
+  let last_row = 0;
+  let last_img_height = 0;
   for (let i = 0; i < images.length; i++) {
     const col = i % numColumns;
     const row = Math.floor(i / numColumns);
-    ctx.drawImage(images[i], col * cellWidth, row * cellHeight);
+    if (row != last_row) { 
+      row_cursor += last_img_height;
+      last_row = row;
+    }
+    last_img_height = images[i].height;
+    ctx.drawImage(images[i], col * cellWidth, row_cursor);
   }
 
   canvas.toBlob((blob) => {
