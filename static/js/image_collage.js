@@ -29,7 +29,7 @@ async function updateOutput() {
   for (let i=0; i < images.length; i++){
     if (i % numColumns == 0){
       const scaleFactor = cellWidth / images[i].width;
-      totalHeight += images[i].height * scaleFactor;
+      totalHeight += (images[i].height * scaleFactor);
     }
   }
 
@@ -48,13 +48,13 @@ async function updateOutput() {
       row_cursor += last_img_height;
       last_row = row;
     }
-    last_img_height = images[i].height;
     let scale_factor = 1;
     if (images[i].width < cellWidth) {
       scale_factor = cellWidth / images[i].width;
     }
     const scaled_width = scale_factor * images[i].width;
     const scaled_height = scale_factor * images[i].height;
+    last_img_height = scaled_height;
     ctx.drawImage(images[i], col * cellWidth, row_cursor, scaled_width, scaled_height);
   }
 
