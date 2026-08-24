@@ -28,7 +28,8 @@ async function updateOutput() {
   let totalHeight = 0;
   for (let i=0; i < images.length; i++){
     if (i % numColumns == 0){
-      totalHeight += images[i].height;
+      const scaleFactor = cellWidth / images[i].width;
+      totalHeight += images[i].height * scaleFactor;
     }
   }
 
@@ -48,7 +49,13 @@ async function updateOutput() {
       last_row = row;
     }
     last_img_height = images[i].height;
-    ctx.drawImage(images[i], col * cellWidth, row_cursor);
+    let scale_factor = 1;
+    if (images[i].width < cellWidth) {
+      scale_factor = cellWidth / images[i].width;
+    }
+    const scaled_width = scale_factor * images[i].width;
+    const scaled_height = scale_factor * images[i].height;
+    ctx.drawImage(images[i], col * cellWidth, row_cursor, scaled_width, scaled_height);
   }
 
   canvas.toBlob((blob) => {
